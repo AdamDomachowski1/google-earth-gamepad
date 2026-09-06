@@ -93,6 +93,30 @@ class KeyHolder:
             self.held = None
 
 
+class Trigger:
+    """One trigger axis, normalized to 0..1.
+
+    The raw range cannot be assumed. SDL reports an axis it has seen no
+    event for as 0.0, while a resting trigger reads -1.0, so a trigger
+    nobody has touched yet looks half-pressed - which held the thrust key
+    down and made the throttle sink on its own. Some pads report 0..1
+    rather than -1..1 on top of that. So take the lowest value the axis
+    has ever shown as its rest point and measure from there."""
+
+    def __init__(self, index):
+        self.index = index
+        self.rest = None
+
+    def read(self, js):
+        raw = js.get_axis(self.index)
+        if self.rest is None or raw < self.rest:
+            self.rest = raw
+        span = 1.0 - self.rest
+        if span <= 1e-6:
+            return 0.0
+        return max(0.0, min(1.0, (raw - self.rest) / span))
+
+
 class Yoke:
     """The stick position, filtered so the yoke has some inertia.
 
@@ -150,6 +174,8 @@ def run_fly(js):
     # RT -> Page Up (faster), LT -> Page Down (slower); the key stays
     # held down for as long as the trigger is pressed.
     throttle = KeyHolder(cfg.KEY["pageup"], cfg.KEY["pagedown"])
+    right_trigger = Trigger(cfg.AX_RT)
+    left_trigger = Trigger(cfg.AX_LT)
     yoke = Yoke()
     prev_dpad = 0
     prev_dpad_x = 0
@@ -234,9 +260,9 @@ def run_fly(js):
                                      pitch, dt)
                 move_mouse(cx + yx * radius, cy + yy * radius)
 
-                rt = (js.get_axis(cfg.AX_RT) + 1.0) / 2.0
-                lt = (js.get_axis(cfg.AX_LT) + 1.0) / 2.0
-                throttle.update(rt if rt > lt else -lt)
+                rt = right_trigger.read(js)
+                lt = left_trigger.read(js)
+                throttle.update(rt - lt)
             else:
                 # Cursor mode: the stick is a velocity, not a position, so
                 # you can reach anything on the screen.
