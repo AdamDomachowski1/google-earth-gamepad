@@ -1,8 +1,9 @@
-"""gepad - fly the Google Earth flight simulator with an Xbox pad (macOS).
+"""gepad - fly the Google Earth flight simulator with an Xbox pad.
 
 Google Earth never touches the gamepad. The script reads it via SDL (pygame)
-and synthesizes mouse/keyboard events through Quartz, so the crash-prone HID
-path in libgoogleearth_pro never runs.
+and synthesizes mouse/keyboard events through the OS (Quartz on macOS,
+SendInput on Windows), so the crash-prone HID path in libgoogleearth_pro
+never runs.
 
 Earth's simulator takes roll and pitch from the mouse and thrust from
 Page Up/Down; that is the whole flight model, so that is all we send.
@@ -24,9 +25,9 @@ import time
 import pygame
 
 from . import config as cfg
-from .macinput import (clamp_to_displays, click_left, cursor_position,
-                       display_center_at, key_down, key_up, move_mouse,
-                       tap_key)
+from .osinput import (clamp_to_displays, click_left, cursor_position,
+                      display_center_at, key_down, key_up, move_mouse,
+                      tap_key)
 
 
 # --- pad reading ------------------------------------------------------

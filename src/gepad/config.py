@@ -1,26 +1,40 @@
-"""Gamepad mapping configuration. Axis/button numbers follow the SDL2
-standard for Xbox controllers. If yours differ, run `just debug` and adjust.
+"""Gamepad mapping configuration.
+
+SDL numbers the axes and buttons of the same pad differently depending on
+the backend - IOKit on macOS, XInput on Windows - so the platform-specific
+ones are picked below. If yours differ, run `just debug` and adjust.
 
 Earth's flight simulator only takes thrust (Page Up/Down) from the
 keyboard; roll and pitch come from the mouse. There is nothing else to
 bind - no rudder, flaps, brakes or landing gear.
 """
 
+import sys
+
+_WINDOWS = sys.platform == "win32"
+
 AX_ROLL = 0        # left stick X  -> roll (moves the cursor)
 AX_PITCH = 1       # left stick Y  -> pitch (moves the cursor)
-AX_LT = 4          # left trigger  -> decrease thrust
-AX_RT = 5          # right trigger -> increase thrust
+
+if _WINDOWS:
+    AX_LT = 2      # left trigger  -> decrease thrust
+    AX_RT = 5      # right trigger -> increase thrust
+    BTN_ESC = 6    # Back/View
+else:
+    AX_LT = 4
+    AX_RT = 5
+    BTN_ESC = 4    # "ARM"/View
 
 BTN_A = 0
-BTN_ESC = 4        # "ARM"/View. Check the number with `just debug`.
 
 # A is a left mouse click, in flight mode as well as cursor mode.
 # Add more buttons to the tuple if you want a second one.
 CLICK_BUTTONS = (BTN_A,)
 
-# D-pad. In SDL it is usually a "hat", but plenty of pads (the Xbox Series
-# controller on macOS among them) report it as ordinary buttons instead, so
-# both are supported. If your numbers differ, check them with `just debug`.
+# D-pad. In SDL it is usually a "hat" - that is what XInput reports on
+# Windows - but plenty of pads (the Xbox Series controller on macOS among
+# them) report it as ordinary buttons instead, so both are supported. The
+# numbers below are only the button fallback; check with `just debug`.
 #   up   -> switch between flight mode and cursor mode
 #   left -> calibrate RADIUS (cursor mode)
 BTN_DPAD_UP = 11
@@ -40,9 +54,16 @@ RATE_HZ = 60
 SMOOTH_IN = 0.03   # deflecting away from the center
 SMOOTH_OUT = 0.10  # relaxing back toward it
 
-# macOS virtual keycodes
-KEY = {
-    "pageup": 116,     # increase thrust
-    "pagedown": 121,   # decrease thrust
-    "esc": 53,
-}
+# Keycodes: Windows virtual-key codes, or macOS virtual keycodes.
+if _WINDOWS:
+    KEY = {
+        "pageup": 0x21,    # increase thrust
+        "pagedown": 0x22,  # decrease thrust
+        "esc": 0x1B,
+    }
+else:
+    KEY = {
+        "pageup": 116,
+        "pagedown": 121,
+        "esc": 53,
+    }
