@@ -35,6 +35,11 @@ CURSOR_SPEED = 900 # px/s at full stick deflection, cursor mode
 INVERT_PITCH = False
 RATE_HZ = 60
 
+# Yoke inertia, seconds (flight mode). Arcade-tight; raise SMOOTH_OUT
+# toward 0.5 for a heavier plane, set both to 0 for an instant yoke.
+SMOOTH_IN = 0.03   # deflecting away from the center
+SMOOTH_OUT = 0.10  # relaxing back toward it
+
 # macOS virtual keycodes
 KEY = {
     "pageup": 116,     # increase thrust

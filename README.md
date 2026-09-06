@@ -1,5 +1,7 @@
 # gepad
 
+> Written with Claude Code — Opus 5 and Fable 5.
+
 Fly the Google Earth flight simulator with an Xbox controller on macOS.
 
 Google Earth never touches the gamepad — the script reads it via SDL

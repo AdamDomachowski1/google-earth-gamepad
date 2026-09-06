@@ -92,6 +92,36 @@ class KeyHolder:
             self.held = None
 
 
+class Yoke:
+    """The stick position, filtered so the yoke has some inertia.
+
+    Each axis chases the stick with an exponential approach; deflecting
+    away from the center is quick, drifting back to it is slower. That
+    asymmetry is what makes it fly like a plane rather than a cursor."""
+
+    def __init__(self, tau_in=cfg.SMOOTH_IN, tau_out=cfg.SMOOTH_OUT):
+        self.tau_in = tau_in
+        self.tau_out = tau_out
+        self.x = 0.0
+        self.y = 0.0
+
+    def center(self):
+        self.x = self.y = 0.0
+
+    def _step(self, cur, target, dt):
+        tau = self.tau_out if abs(target) < abs(cur) else self.tau_in
+        if tau <= 0.0:
+            return target
+        cur += (target - cur) * (1.0 - math.exp(-dt / tau))
+        # the approach is asymptotic - snap the last fraction home
+        return 0.0 if abs(cur) < 1e-3 else cur
+
+    def update(self, tx, ty, dt):
+        self.x = self._step(self.x, tx, dt)
+        self.y = self._step(self.y, ty, dt)
+        return self.x, self.y
+
+
 # --- modes ------------------------------------------------------------
 
 def run_debug(js):
@@ -119,6 +149,7 @@ def run_fly(js):
     # RT -> Page Up (faster), LT -> Page Down (slower); the key stays
     # held down for as long as the trigger is pressed.
     throttle = KeyHolder(cfg.KEY["pageup"], cfg.KEY["pagedown"])
+    yoke = Yoke()
     prev_dpad = 0
     prev_dpad_x = 0
     prev_esc = False
@@ -148,6 +179,7 @@ def run_fly(js):
                 if flying:
                     # center = middle of the display the cursor is on
                     cx, cy = display_center_at(*cursor_position())
+                    yoke.center()
                     print(f">>> FLIGHT mode - center ({cx:.0f}, {cy:.0f})",
                           flush=True)
                 else:
@@ -197,8 +229,9 @@ def run_fly(js):
                 pitch = dead(js.get_axis(cfg.AX_PITCH))
                 if cfg.INVERT_PITCH:
                     pitch = -pitch
-                move_mouse(cx + dead(js.get_axis(cfg.AX_ROLL)) * radius,
-                           cy + pitch * radius)
+                yx, yy = yoke.update(dead(js.get_axis(cfg.AX_ROLL)),
+                                     pitch, dt)
+                move_mouse(cx + yx * radius, cy + yy * radius)
 
                 rt = (js.get_axis(cfg.AX_RT) + 1.0) / 2.0
                 lt = (js.get_axis(cfg.AX_LT) + 1.0) / 2.0
