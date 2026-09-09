@@ -25,11 +25,18 @@ gepad.DEFAULTS = {
 
   // --- tuning ---
   deadzone: 0.12,
-  // How far the yoke swings from the centre of the map at full deflection,
-  // as a fraction of the map's half-size. Unlike the desktop port this
-  // needs no calibration ritual: the canvas tells us its own size, so the
-  // yoke physically cannot leave the window.
-  radiusFrac: 0.35,
+  // How far the yoke swings at full deflection, as a fraction of the map's
+  // half-width and half-height respectively - which is to say, how much
+  // control authority each axis gets, since Earth reads distance from the
+  // centre as how hard you are pulling.
+  //
+  // The two are separate because the window is not square and the axes do
+  // not want the same thing: a wide map has nearly twice the room sideways,
+  // and roll is the axis you want to snap. Measuring each against its own
+  // dimension spends that room instead of throwing it away, and keeps any
+  // value below 1.0 inside the window by construction - no calibration.
+  radiusFracRoll: 0.85,
+  radiusFracPitch: 0.7,
   invertPitch: false,
 
   // Yoke inertia, seconds. Deflecting away from centre is quick, drifting

@@ -81,9 +81,8 @@
       const r = gepad.mapRect();
       const cx = r.left + r.width / 2;
       const cy = r.top + r.height / 2;
-      const radius = (cfg.radiusFrac * Math.min(r.width, r.height)) / 2;
-      const nx = cx + x * radius;
-      const ny = cy + y * radius;
+      const nx = cx + (x * cfg.radiusFracRoll * r.width) / 2;
+      const ny = cy + (y * cfg.radiusFracPitch * r.height) / 2;
 
       if (cfg.yokeMode === "mouse") {
         gepad.movePointer(nx, ny, nx - px, ny - py);

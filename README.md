@@ -83,7 +83,11 @@ there is no cursor mode here, and no radius calibration either: the canvas
 reports its own size, so the yoke cannot leave the window. **Escape on the
 real keyboard always disarms**, whatever the pad is doing.
 
-Click the toolbar icon for deadzone, yoke travel, inertia and mapping. That
+Click the toolbar icon for deadzone, roll and pitch travel, inertia and
+mapping. Travel is the agility knob — how far the yoke swings at full stick,
+and so how hard Earth thinks you are pulling. Roll and pitch are set
+separately, each against its own dimension of the map, because a wide window
+has far more room sideways than it does vertically. That
 panel also carries a live axis/button readout, so if your pad reports
 different numbers you can press a button and read off the one to put in the
 mapping. Settings apply live and are stored in `chrome.storage.sync`.
