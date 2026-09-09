@@ -1,10 +1,10 @@
 /* gepad - mapping and tuning.
  *
  * The Web Gamepad API normalises every pad it recognises to its "standard"
- * layout, so these numbers are far tamer than the SDL ones the Python port
- * has to cope with: the d-pad is four ordinary buttons rather than a hat
- * that half the pads decline to report, and the triggers are analogue
- * buttons with a .value in [0, 1] instead of axes that idle at -1.
+ * layout, which spares us most of what native gamepad code has to cope with:
+ * the d-pad is four ordinary buttons rather than a hat that half the pads
+ * decline to report, and the triggers are analogue buttons with a .value in
+ * [0, 1] rather than axes that idle at -1.
  *
  * Everything here is overridable from the popup and stored in
  * chrome.storage.sync; these are only the values a fresh install starts at.

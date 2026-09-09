@@ -1,5 +1,5 @@
-/* gepad - the settings popup, and the live pad readout that replaces
- * `just debug`: press a button and read off the number to put in mapping. */
+/* gepad - the settings popup, and the live pad readout: press a button and
+ * read off the number to put in the mapping below it. */
 
 const SLIDERS = ["deadzone", "radiusFrac", "smoothIn", "smoothOut"];
 const CHECKS = ["invertPitch", "hud"];

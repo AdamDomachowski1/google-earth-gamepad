@@ -1,9 +1,8 @@
 /* gepad - the main loop.
  *
- * Two states, not the desktop port's two modes. Cursor mode existed only
- * because the Python version hijacked the system cursor and you needed a way
- * to get it back; here the real mouse is untouched throughout, so the pad is
- * simply armed or it is not.
+ * Two states rather than two modes. A native version of this has to hijack
+ * the system cursor and then hand you a way to get it back; here the real
+ * mouse is untouched throughout, so the pad is simply armed or it is not.
  *
  * Armed:   left stick is the yoke, triggers are thrust, A clicks, View is
  *          Escape. Disarm with d-pad up, or the physical Escape key.

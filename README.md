@@ -1,103 +1,137 @@
 # gepad
 
-> Written with Claude Code — Opus 5 and Fable 5.
+Fly the Google Earth flight simulator with a gamepad, in Chrome.
 
-Fly the Google Earth flight simulator with an Xbox controller on macOS.
+Google Earth never touches the pad. The extension reads it through the
+Gamepad API and hands the page synthetic pointer and key events, so nothing
+outside the browser is involved: no helper process, no driver, no
+Accessibility permission, no platform-specific code.
 
-Google Earth never touches the gamepad — the script reads it via SDL
-(pygame) and synthesizes mouse/keyboard events through Quartz, so the
-crash-prone HID path in `libgoogleearth_pro` never runs.
+Since June 2026 the flight simulator lives in the web build, with the same
+flight model the old desktop app exposed — roll and pitch from the mouse,
+thrust from Page Up/Down. That is the entire model Earth offers: there is no
+rudder, no flaps, no brakes and no landing gear to bind.
 
-**This script drives Google Earth Pro, the desktop app.** Since June 2026
-the flight simulator is in the web build as well — for that, see
-[`extension/`](extension/README.md), a Chrome extension that needs neither
-Python nor Accessibility permission and runs on every platform.
+## Install
 
-## Requirements
+Nothing to build and nothing to install — the repository *is* the extension.
 
-- macOS, [uv](https://docs.astral.sh/uv/), [just](https://just.systems/)
-- Permissions: System Settings → Privacy & Security → Accessibility
-  → add Terminal (or the IDE you run it from)
+1. Open `chrome://extensions` (paste it in the address bar; the menu route
+   is ⋮ → Extensions → Manage Extensions).
+2. Turn on **Developer mode**, top right.
+3. Click **Load unpacked** and pick the repository folder — the one with
+   `manifest.json` directly inside it:
 
-## Usage
+   ```
+   ~/Desktop/google-earth-gamepad
+   ```
 
-```sh
-just install       # once: uv sync
-just check         # is the gamepad visible?
-just debug         # live view of axis/button numbers (for mapping)
-just fly           # start (opens in cursor mode)
-```
+4. Optional: click the puzzle-piece icon in the toolbar and pin **gepad**,
+   so the settings panel is one click away.
 
-1. Open the flight simulator (Google Earth Pro: Cmd+Opt+A, joystick
-   support **unchecked**).
-2. `just fly`. The pad starts in **cursor mode** — steer with the left
-   stick and press **A** to click into the map window.
-3. **D-pad UP** switches to **flight mode** (and back). Exit: Ctrl+C.
+The extension only ever runs on `earth.google.com`; it has no access to any
+other site and asks for no permission beyond storing your settings.
 
-## Modes
+**After editing any file** press the ↻ reload button on the gepad card in
+`chrome://extensions`, then reload the Earth tab. Content scripts are
+injected at page load, so the tab reload is the half people forget.
 
-**Cursor mode** (the default) — the pad is an ordinary mouse: the left
-stick moves the cursor freely at `CURSOR_SPEED` px/s. No flight keys are
-sent, so this is where you click into the map window or out of a dialog.
+If something misbehaves, the content script logs to the Earth tab's own
+console (F12); the popup has a separate console, reached by right-clicking
+inside it → Inspect.
 
-**Flight mode** — the cursor is pinned to the center of the display and
-the left stick deflects it like a yoke; releasing it returns to center.
-This is what Earth reads as roll and pitch.
+## macOS: let Chrome see the pad
 
-A is a left click in **both** modes, so you can grab the map window back
-without dropping out of flight mode.
+**System Settings → Privacy & Security → Input Monitoring → add Google
+Chrome**, then quit and reopen Chrome.
 
-## Calibrating the yoke
+Do this before anything else. Without it Chrome sees no gamepad at all —
+`navigator.getGamepads()` stays empty, the HUD sits on `NO PAD`, and every
+online gamepad tester comes up blank too. macOS gates `IOHIDManager` behind
+this permission, and although the wording only mentions keyboards, it covers
+every HID device, controllers included.
 
-The yoke's travel — `RADIUS`, how far the cursor swings from the center at
-full stick deflection — has to fit inside the Earth window, and the edge
-you have least room toward is what limits it. Rather than guessing a
-number, measure it:
+The confusing part is that the pad is plainly working everywhere else. Games
+and SDL-based tools keep reading it, because they support both the raw HID
+path and Apple's GameController framework and quietly fall back to whichever
+one they are allowed to use. Chrome only has the gated path, so it comes up
+empty while the rest of the machine is happy. macOS 26 tightened this
+further, and Chrome has carried a
+[separate long-standing Xbox-on-macOS bug](https://issues.chromium.org/issues/400455006)
+for years — so a pad that works everywhere else is no evidence at all that
+Chrome can see it.
 
-1. Stay in **cursor mode** (the pad starts there).
-2. Drive the cursor toward the tightest edge, as far from the center as
-   you consider safe.
-3. Press **d-pad LEFT**. The distance from the center of the display to
-   the cursor becomes the new radius, and it is printed in the terminal.
+## Fly
 
-It applies immediately, so switch to flight mode and try it. The value
-lasts for that run; to keep it, copy the printed number into `RADIUS` in
-`config.py`. A press closer than `MIN_RADIUS` (20 px) to the center is
-ignored as a stray press.
+1. `earth.google.com` → **Explore Earth** → **Tools** → **Flight simulator**
+2. Press any button on the pad so Chrome reveals it (the API hides gamepads
+   until the page has seen one press). The HUD, bottom left, stops saying
+   `NO PAD`.
+3. **D-pad up** arms. Fly.
 
-## Mapping
+| Pad | Action |
+|---|---|
+| Left stick | roll / pitch (yoke, self-centring) |
+| RT / LT | thrust up / down (Page Up/Down, held) |
+| A | left click |
+| View / Back | Escape |
+| D-pad up | arm / disarm |
+| D-pad right | swap yoke between mouse and arrow keys |
 
-Edit `src/gepad/config.py` - axis and button numbers, keycodes,
-`DEADZONE`, `RADIUS` (sensitivity) and `INVERT_PITCH`. Run `just debug`
-to read off the numbers your pad reports.
+The physical mouse is never touched, so the cursor stays yours — that is why
+there is no cursor mode here, and no radius calibration either: the canvas
+reports its own size, so the yoke cannot leave the window. **Escape on the
+real keyboard always disarms**, whatever the pad is doing.
 
-| Pad | Flight mode | Cursor mode |
-|---|---|---|
-| Left stick | roll / pitch (yoke, centered) | moves the cursor |
-| RT / LT | thrust up / down (Page Up/Down, held) | — |
-| A | left mouse click | left mouse click |
-| "ARM" / View | Escape | Escape |
-| D-pad up | switch modes | switch modes |
-| D-pad left | — | calibrate the yoke radius |
+Click the toolbar icon for deadzone, yoke travel, inertia and mapping. That
+panel also carries a live axis/button readout, so if your pad reports
+different numbers you can press a button and read off the one to put in the
+mapping. Settings apply live and are stored in `chrome.storage.sync`.
 
-That is the entire flight model Earth exposes: roll and pitch from the
-mouse, thrust from Page Up/Down. There is no rudder, no flaps, no brakes
-and no landing gear to bind.
+⚠️ Clicking **inside** the simulation toggles Earth between mouse-guided and
+keyboard flight controls. If the yoke stops responding after a click, press
+A again to toggle mouse control back on.
 
-⚠️ Clicking **inside** the simulation toggles Earth between mouse-guided
-and keyboard flight controls. If the yoke stops responding after a click,
-press A again to toggle mouse control back on.
+## If the HUD says NO PAD
 
-In flight mode the cursor follows the stick directly: `RADIUS` px from the
-center of the display at full deflection — see **Calibrating the yoke**
-above. Set `INVERT_PITCH = True` in `config.py` for pull-back-to-climb.
+In order:
 
-`BTN_ESC` is set to button 4 (View/Back on the SDL2 Xbox layout). If the
-button you want sits elsewhere on your pad, run `just debug`, press it,
-and put its number there.
+1. **Input Monitoring** — see above. This is the usual answer on macOS.
+2. **Press a button on the pad, not the mouse.** Gamepads stay hidden from a
+   document until it has seen a gamepad press; a click will not do.
+3. **Click the map first.** Chrome gives no gamepads to an unfocused
+   document, so the tab must have focus when you press.
+4. **Do not diagnose from the console.** Typing into DevTools focuses
+   DevTools, so `navigator.getGamepads()` typed by hand reports an empty
+   list however well the pad works. Use `gepad.probeIn(5)`, which defers the
+   reading long enough to click back into the page and reports
+   `document.hasFocus()` alongside it. The HUD is the honest indicator.
+5. **Check the popup.** It reads the pad in its own document, so if it fills
+   in and the Earth tab does not, the problem is focus rather than the pad.
+
+`gepad.probe()` reports the canvas, its rect, the pads and the current mode.
+The content script runs in its own world, so pick `gepad` in DevTools'
+context dropdown — in the page's own world there is no `gepad`.
+
+## If the yoke does nothing
+
+Synthetic events carry `isTrusted: false`. Ordinary listeners receive them
+regardless, so this should not matter — but Earth is a WebAssembly canvas
+app and cannot be inspected from outside. Two fallbacks, in order:
+
+1. **D-pad right** switches the yoke to Earth's arrow keys. If thrust works
+   but the yoke does not, keyboard events land and pointer events do not.
+2. If neither lands, the fix is a `chrome.debugger` build driving CDP's
+   `Input.dispatchMouseEvent`, whose events are genuinely trusted. Only
+   `src/input.js` would change; it is the only file that talks to the page.
 
 ## Layout
 
-- `config.py` - all mapping and tuning constants
-- `macinput.py` - the Quartz layer (synthetic mouse/keyboard events)
-- `main.py` - pad reading, the two modes and the main loop
+- `manifest.json` — MV3; runs on `earth.google.com` only, asks for `storage`
+- `src/config.js` — mapping, tuning, and the storage bridge to the popup
+- `src/input.js` — synthetic pointer/keyboard events; the only file that
+  talks to the page
+- `src/pad.js` — pad reading, deadzone, yoke inertia, held-key state
+- `src/hud.js` — the on-screen readout, in a shadow root
+- `src/main.js` — arm/disarm and the frame loop
+- `popup.html` / `popup.js` — settings and the live pad readout

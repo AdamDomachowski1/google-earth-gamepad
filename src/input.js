@@ -1,7 +1,7 @@
 /* gepad - the synthetic input layer.
  *
- * This is the browser's answer to macinput.py, and it is where the one real
- * risk of the whole approach lives. Events built in JavaScript carry
+ * Everything the page ever receives is built here, and this is where the one
+ * real risk of the whole approach lives. Events built in JavaScript carry
  * isTrusted: false. Ordinary listeners receive them regardless, so Earth
  * should never notice - but if it ever starts checking, the escape hatch is
  * a chrome.debugger build driving CDP's Input.dispatchMouseEvent, whose
