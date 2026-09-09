@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>gepad</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        width: 290px; margin: 0; padding: 12px;
+        background: #16181c; color: #e8eaed;
+        font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      h1 { margin: 0 0 2px; font-size: 13px; letter-spacing: 0.06em; }
+      .hint { color: #9aa0a6; margin: 0 0 10px; }
+      .live {
+        padding: 7px 8px; margin-bottom: 12px; border-radius: 6px;
+        background: #101216; border: 1px solid #2b2f36;
+        color: #9aa0a6; word-break: break-all;
+      }
+      .live b { color: #8ab4f8; font-weight: 600; }
+      .row {
+        display: grid; grid-template-columns: 1fr 46px;
+        align-items: center; gap: 8px; margin-bottom: 7px;
+      }
+      .row label { color: #c4c7ca; }
+      .row output { color: #8ab4f8; text-align: right; }
+      input[type="range"] { width: 100%; accent-color: #8ab4f8; }
+      .check { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; }
+      select, input[type="number"] {
+        background: #101216; color: #e8eaed; border: 1px solid #2b2f36;
+        border-radius: 4px; padding: 3px 5px; font: inherit; width: 100%;
+      }
+      details { margin-top: 10px; border-top: 1px solid #2b2f36; padding-top: 8px; }
+      summary { cursor: pointer; color: #9aa0a6; }
+      .map { display: grid; grid-template-columns: 1fr 56px; gap: 6px 8px; margin-top: 8px; }
+      .map label { align-self: center; color: #c4c7ca; }
+      button {
+        width: 100%; margin-top: 12px; padding: 6px; border-radius: 5px;
+        background: #23262c; color: #e8eaed; border: 1px solid #2b2f36;
+        font: inherit; cursor: pointer;
+      }
+      button:hover { background: #2b2f36; }
+    </style>
+  </head>
+  <body>
+    <h1>gepad</h1>
+    <p class="hint">d-pad up arms · d-pad right swaps yoke · Esc disarms</p>
+
+    <div class="live" id="live">press a button on the pad</div>
+
+    <div class="row">
+      <label for="deadzone">deadzone</label><output id="deadzone-out"></output>
+      <input type="range" id="deadzone" min="0" max="0.4" step="0.01" style="grid-column: 1 / -1" />
+    </div>
+    <div class="row">
+      <label for="radiusFrac">yoke travel</label><output id="radiusFrac-out"></output>
+      <input type="range" id="radiusFrac" min="0.05" max="0.9" step="0.01" style="grid-column: 1 / -1" />
+    </div>
+    <div class="row">
+      <label for="smoothIn">inertia in</label><output id="smoothIn-out"></output>
+      <input type="range" id="smoothIn" min="0" max="0.5" step="0.01" style="grid-column: 1 / -1" />
+    </div>
+    <div class="row">
+      <label for="smoothOut">inertia out</label><output id="smoothOut-out"></output>
+      <input type="range" id="smoothOut" min="0" max="0.5" step="0.01" style="grid-column: 1 / -1" />
+    </div>
+
+    <div class="row">
+      <label for="yokeMode">yoke</label>
+      <select id="yokeMode" style="grid-column: 1 / -1">
+        <option value="mouse">mouse (analogue)</option>
+        <option value="keys">arrow keys (fallback)</option>
+      </select>
+    </div>
+
+    <div class="check">
+      <input type="checkbox" id="invertPitch" /><label for="invertPitch">invert pitch</label>
+    </div>
+    <div class="check">
+      <input type="checkbox" id="hud" /><label for="hud">show HUD</label>
+    </div>
+
+    <details>
+      <summary>mapping</summary>
+      <div class="map" id="map"></div>
+    </details>
+
+    <button id="reset">reset to defaults</button>
+    <script src="src/config.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

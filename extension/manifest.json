@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "gepad",
+  "version": "0.1.0",
+  "description": "Fly the Google Earth flight simulator with a gamepad, in the browser.",
+  "permissions": ["storage"],
+  "action": {
+    "default_title": "gepad settings",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://earth.google.com/*"],
+      "js": [
+        "src/config.js",
+        "src/input.js",
+        "src/pad.js",
+        "src/hud.js",
+        "src/main.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

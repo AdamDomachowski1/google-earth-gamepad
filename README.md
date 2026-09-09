@@ -8,9 +8,10 @@ Google Earth never touches the gamepad — the script reads it via SDL
 (pygame) and synthesizes mouse/keyboard events through Quartz, so the
 crash-prone HID path in `libgoogleearth_pro` never runs.
 
-**Google Earth Pro (desktop) only.** The flight simulator lives in Earth
-Pro; the browser version has no simulator, so neither the thrust keys nor
-the mouse-flown yoke do anything there.
+**This script drives Google Earth Pro, the desktop app.** Since June 2026
+the flight simulator is in the web build as well — for that, see
+[`extension/`](extension/README.md), a Chrome extension that needs neither
+Python nor Accessibility permission and runs on every platform.
 
 ## Requirements
 
